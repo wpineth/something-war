@@ -1,6 +1,8 @@
 from game import Game
 
-from flask import Flask, send_file, send_from_directory, request
+from flask import Flask, send_file, send_from_directory, request, make_response, json
+
+games = []
 
 app = Flask(__name__, static_url_path='', static_folder='static')
 
@@ -22,6 +24,19 @@ def game():
 ])
 def status():
     if(request.method == 'GET'):
-        return 'get_test'
+        response = make_response()
+
+        if(request.cookies.get('user') == None):
+            response.set_cookie('user', str(len(games)))
+            games.append(Game())
+        
+        user = int(request.cookies.get('user'))
+
+        while(len(games) < user + 1):
+            games.append(Game())
+        
+        response.response = games[int(request.cookies.get('user'))].stringify()
+        
+        return response
     elif(request.method == 'POST'):
         return 'post_test'

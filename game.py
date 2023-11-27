@@ -265,7 +265,7 @@ class Game:
     def get_economy_phase(self):
         return self._economy_phase
 
-    def print(self):
+    def stringify(self):
         """
         ┏━━━━━┳━━━━━┳━━━━━┳━━━━━┳━━━━━┳━━━━━┳━━━━━┳━━━━━┓
         ┃b2  ■┃     ┃    ◈┃     ┃     ┃     ┃     ┃    ◈┃
@@ -336,18 +336,23 @@ class Game:
 
             return tile_out
 
-        def print_row(row):
+        def stringify_row(row):
             row_out = "┃"
             for col in range(8):
                 row_out += stringify_tile(row, col) + "┃"
-            print(row_out)
+            return row_out
 
-        print("┏━━━━━┳━━━━━┳━━━━━┳━━━━━┳━━━━━┳━━━━━┳━━━━━┳━━━━━┓")
+        string = "┏━━━━━┳━━━━━┳━━━━━┳━━━━━┳━━━━━┳━━━━━┳━━━━━┳━━━━━┓"
         for row in range(7):
-            print_row(row)
-            print("┣━━━━━╋━━━━━╋━━━━━╋━━━━━╋━━━━━╋━━━━━╋━━━━━╋━━━━━┫")
-        print_row(7)
-        print("┗━━━━━┻━━━━━┻━━━━━┻━━━━━┻━━━━━┻━━━━━┻━━━━━┻━━━━━┛")
+            string += stringify_row(row)
+            string += "┣━━━━━╋━━━━━╋━━━━━╋━━━━━╋━━━━━╋━━━━━╋━━━━━╋━━━━━┫"
+        string += stringify_row(7)
+        string += "┗━━━━━┻━━━━━┻━━━━━┻━━━━━┻━━━━━┻━━━━━┻━━━━━┻━━━━━┛"
+        
+        return string
+
+    def print(self):
+        print(stringify(self))
 
     # Takes a space, either as a string of length 2 (e.g. "C3") or a tuple (e.g. (5, 2))
     # and a heading direction, either as a string of length 1 or 2 (e.g. "N" "SW") or a tuple (e.g. (-1, 0) (1,-1))
