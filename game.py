@@ -340,12 +340,12 @@ class Game:
             row_out = "┃"
             for col in range(8):
                 row_out += stringify_tile(row, col) + "┃"
-            return row_out
+            return row_out + "\n"
 
-        string = "┏━━━━━┳━━━━━┳━━━━━┳━━━━━┳━━━━━┳━━━━━┳━━━━━┳━━━━━┓"
+        string = "┏━━━━━┳━━━━━┳━━━━━┳━━━━━┳━━━━━┳━━━━━┳━━━━━┳━━━━━┓\n"
         for row in range(7):
             string += stringify_row(row)
-            string += "┣━━━━━╋━━━━━╋━━━━━╋━━━━━╋━━━━━╋━━━━━╋━━━━━╋━━━━━┫"
+            string += "┣━━━━━╋━━━━━╋━━━━━╋━━━━━╋━━━━━╋━━━━━╋━━━━━╋━━━━━┫\n"
         string += stringify_row(7)
         string += "┗━━━━━┻━━━━━┻━━━━━┻━━━━━┻━━━━━┻━━━━━┻━━━━━┻━━━━━┛"
         
