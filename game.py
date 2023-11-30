@@ -1,4 +1,14 @@
 class Game:
+    class Action:
+        TYPE_MOVE = 1
+        TYPE_ATTACK = 2
+        TYPE_CAPTURE = 3
+
+        def __init__(self, type, space, heading=None):
+            self.type = type
+            self.space = space
+            self.heading = heading
+
     ### RULES ###
     # The game is played on an 8x8 board, with 14 cities spread throughout.
     # B  .  o  .  .  .  .  o
@@ -348,11 +358,38 @@ class Game:
             string += "┣━━━━━╋━━━━━╋━━━━━╋━━━━━╋━━━━━╋━━━━━╋━━━━━╋━━━━━┫\n"
         string += stringify_row(7)
         string += "┗━━━━━┻━━━━━┻━━━━━┻━━━━━┻━━━━━┻━━━━━┻━━━━━┻━━━━━┛"
-        
+
         return string
 
     def print(self):
-        print(stringify(self))
+        print(self.stringify())
+
+    # Returns a list of objects of type Action
+    def get_possible_actions(self):
+        pass #TODO
+
+    # Expects an object of type Action
+    def take_action(self, action):
+        pass #TODO
+
+    def is_terminal(self):
+        return (self.get_reward() != 0)
+
+    def get_reward(self):
+        white_cities = False
+        black_cities = False
+        for row in self._cities:
+            for city in row:
+                if city == 1:
+                    white_cities = True
+                if city == -1:
+                    black_cities = True
+
+        if black_cities and not white_cities:
+            return -1
+        if white_cities and not black_cities:
+            return 1
+        return 0
 
     # Takes a space, either as a string of length 2 (e.g. "C3") or a tuple (e.g. (5, 2))
     # and a heading direction, either as a string of length 1 or 2 (e.g. "N" "SW") or a tuple (e.g. (-1, 0) (1,-1))
@@ -427,6 +464,20 @@ class Game:
                 self._clear_tile(row, col)
             else:
                 self._hit(row, col, victim_R)  # if no kill, victim retaliates
+
+    def capture(self, space):
+        row, col = self._parse_space(space)
+
+        if self._cities[row][col] is None:
+            raise Exception("Target space does not contain a city")
+        if self._cities[row][col] == self._player_to_move:
+            raise Exception("Target city is already under your control")
+        if self._pieces[row][col] * self._player_to_move <= 0:
+            raise Exception("You do not control a piece in target city")
+        if self._move_ready[row][col] == 0 or (abs(self._pieces[row][col]) == 2 and self._move_ready[row][col] == 1):
+            raise Exception("A piece that has already moved cannot capture a city until next turn")
+
+        self._cities = self._player_to_move
 
     @staticmethod
     def _parse_space(space):
