@@ -26,16 +26,32 @@ def status():
     if(request.method == 'GET'):
         response = make_response()
 
-        if(request.cookies.get('user') == None):
-            response.set_cookie('user', str(len(games)))
+        user = request.cookies.get('user')
+        if(user == None):
+            user = str(len(games))
+            response.set_cookie('user', user)
             games.append(Game())
-        
-        user = int(request.cookies.get('user'))
+
+        user = int(user)
 
         while(len(games) < user + 1):
             games.append(Game())
         
-        response.response = games[int(request.cookies.get('user'))].stringify()
+        game = games[user]
+        response.response = json.dumps({
+            'attack_ready': game.get_attack_ready(),
+            'black_money': game.get_black_money(),
+            'black_research': game.get_black_research(),
+            'bless': game.get_bless(),
+            'cities': game.get_cities(),
+            'economy_phase': game.get_economy_phase(),
+            'move_ready': game.get_move_ready(),
+            'piece_health': game.get_piece_health(),
+            'pieces': game.get_pieces(),
+            'player_to_move': game.get_player_to_move(),
+            'white_money': game.get_white_money(),
+            'white_research': game.get_white_research()
+        })
         
         return response
     elif(request.method == 'POST'):
