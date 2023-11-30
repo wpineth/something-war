@@ -35,7 +35,7 @@ def status():
         while(len(games) < user + 1):
             games.append(Game())
         
-        response.response = games[int(request.cookies.get('user'))].stringify()
+        response.response = games[int(request.cookies.get('user'))].stringify_board()
         
         return response
     elif(request.method == 'POST'):
