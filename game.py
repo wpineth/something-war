@@ -433,8 +433,10 @@ class Game:
         if self._economy_phase:
             for row in range(8):
                 for col in range(8):
-                    if self._cities[row][col] == self._player_to_move:  # in each city the current player owns
+                    if self._cities[row][col] == self._player_to_move and self._pieces[row][col] == 0:
+                        # in each empty city the current player owns
                         for piece_type in range(1, 8):
+                            # for each kind of piece
                             if tech[piece_type] and money > self._C_MAP[piece_type]:
                                 output.append(Game.Action(Game.Action.TYPE_PLACE, (row, col), None, piece_type))
 
@@ -450,15 +452,17 @@ class Game:
 
         # End Turn
         if self._economy_phase:
-            output.append(Game.Action(Game.Action.TYPE_ECONOMY, None, None, None))
+            output.append(Game.Action(Game.Action.TYPE_END_TURN, None, None, None))
 
         return output
 
     def _get_piece_actions_at(self, row, col):
         output = []
         # Capture
-        if self._cities[row][col] != self._player_to_move:
-            output.append(Game.Action(Game.Action.TYPE_CAPTURE, (row, col), None, None))
+        if (self._cities[row][col] is not None) and (self._cities[row][col] != self._player_to_move):
+            if self._move_ready[row][col] >= 1: # needs to have move readiness
+                if abs(self._pieces[row][col]) != 2 or self._move_ready[row][col] >= 2: # if it's a runner, it needs two move readiness
+                    output.append(Game.Action(Game.Action.TYPE_CAPTURE, (row, col)))
 
         valid_directions = []
         if row > 0:
@@ -487,9 +491,6 @@ class Game:
             # Attack
             if self._attack_ready[row][col] > 0 and self._pieces[target_row][target_col] * self._player_to_move < 0:
                 output.append(Game.Action(Game.Action.TYPE_ATTACK, (row, col), (row_heading, col_heading)))
-            # Capture
-            if self._move_ready[row][col] == self._M_MAP[abs(self._pieces[row][col])]:
-                output.append(Game.Action(Game.Action.TYPE_CAPTURE, (row, col)))
 
         return output
 
