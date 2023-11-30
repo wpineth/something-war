@@ -35,6 +35,9 @@ class TypingHumanAgent(Agent):
                 print("Try again (or type \"help\")")
                 continue
             action_type = Game.Action.STRING_TO_TYPE[action_type_string]
+            if len(action_decomposition) < self._num_parameters(action_type):
+                print("Try again (or type \"help\")")
+                continue
 
             action = Game.Action(action_type)
 
@@ -59,3 +62,19 @@ class TypingHumanAgent(Agent):
             print("Accepted")
             return action
 
+    def _num_parameters(self, action_type):
+        match action_type:
+            case Game.Action.TYPE_MOVE:
+                return 3
+            case Game.Action.TYPE_ATTACK:
+                return 3
+            case Game.Action.TYPE_CAPTURE:
+                return 2
+            case Game.Action.TYPE_RESEARCH:
+                return 2
+            case Game.Action.TYPE_ECONOMY:
+                return 1
+            case Game.Action.TYPE_PLACE:
+                return 3
+            case Game.Action.TYPE_END_TURN:
+                return 1
