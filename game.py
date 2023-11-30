@@ -370,7 +370,17 @@ class Game:
 
     # Expects an object of type Action
     def take_action(self, action):
-        pass #TODO
+        if not isinstance(action, Game.Action):
+            raise Exception("Did not pass a proper Action object")
+
+        if action.type == Game.Action.TYPE_MOVE:
+            self.move(action.space, action.heading)
+        elif action.type == Game.Action.TYPE_ATTACK:
+            self.attack(action.space, action.heading)
+        elif action.type == Game.Action.TYPE_CAPTURE:
+            self.capture(action.space)
+        else:
+            raise Exception("Invalid action type")
 
     def is_terminal(self):
         return (self.get_reward() != 0)
