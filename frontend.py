@@ -39,6 +39,10 @@ def status():
         
         game = games[user]
         response.response = json.dumps({
+            'max_health': game._M_MAP,
+            'attack': game._A_MAP,
+            'retaliation': game._R_MAP,
+            'cost': game._C_MAP,
             'attack_ready': game.get_attack_ready(),
             'black_money': game.get_black_money(),
             'black_research': game.get_black_research(),

@@ -1,15 +1,86 @@
 td{
     position: relative;
-    width: 50px;
-    height: 50px;
+    width: 100px;
+    height: 100px;
     padding: 0px;
     background-color: lightgrey;
 }
 
-td > p{
+td > div{
     position: absolute;
     top: 50%;
     left: 50%;
+    width: 80px;
+    height: 80px;
     margin: 0px;
+    padding: 0px;
+    outline: 2px solid black;
+    transform: translate(-50%, -50%);
+}
+
+td > div.white{
+    background-color: white;
+}
+
+td > div.black{
+    background-color: black;
+}
+
+td > div.neutral{
+    background-color: gray;
+}
+
+td > div > div{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 60px;
+    height: 60px;
+    margin: 0px;
+    padding: 0px;
+    outline: 2px solid gray;
+    transform: translate(-50%, -50%);
+}
+
+td > div > div.white{
+    background-color: white;
+}
+
+td > div > div.black{
+    background-color: black;
+}
+
+td > div > div.white > p{
+    color: black;
+}
+
+td > div > div.black > p{
+    color: white;
+}
+
+td > div > div > p.health{
+    position: absolute;
+    top: 25%;
+    left: 50%;
+    margin: 0px;
+    font-size: 1em;
+    transform: translate(-50%, -50%);
+}
+
+td > div > div > p.attack{
+    position: absolute;
+    top: 75%;
+    left: 25%;
+    margin: 0px;
+    font-size: 1em;
+    transform: translate(-50%, -50%);
+}
+
+td > div > div > p.retaliation{
+    position: absolute;
+    top: 75%;
+    left: 75%;
+    margin: 0px;
+    font-size: 1em;
     transform: translate(-50%, -50%);
 }
