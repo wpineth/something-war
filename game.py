@@ -1,4 +1,29 @@
 class Game:
+    class Action:
+        TYPE_MOVE = 1  # Moves the piece at space in the direction of heading
+        TYPE_ATTACK = 2  # Attacks with the piece at space in the direction of heading
+        TYPE_CAPTURE = 3  # Captures a city with the piece at space
+        TYPE_RESEARCH = 4  # Researches the indicated piece_type
+        TYPE_ECONOMY = 5  # Transfers to Economy Phase. Doesn't use any parameters
+        TYPE_PLACE = 6  # Places a piece of type piece_type at space
+        TYPE_END_TURN = 7  # Ends turn. Doesn't use any parameters
+
+        STRING_TO_TYPE = {
+            "move": TYPE_MOVE,
+            "attack": TYPE_ATTACK,
+            "capture": TYPE_CAPTURE,
+            "research": TYPE_RESEARCH,
+            "economy": TYPE_ECONOMY,
+            "place": TYPE_PLACE,
+            "end": TYPE_END_TURN,
+        }
+
+        def __init__(self, action_type, space=None, heading=None, piece_type=None):
+            self.action_type = action_type
+            self.space = space
+            self.heading = heading
+            self.piece_type = piece_type
+
     ### RULES ###
     # The game is played on an 8x8 board, with 14 cities spread throughout.
     # B  .  o  .  .  .  .  o
@@ -89,6 +114,15 @@ class Game:
             "archer": 5,
             "support": 6,
             "berserker": 7
+        }
+        self._NUMBER_TO_NAME = {
+            1: "basic",
+            2: "runner",
+            3: "defender",
+            4: "swordsman",
+            5: "archer",
+            6: "support",
+            7: "berserker"
         }
         self._M_MAP = {
             1: 2,
@@ -265,7 +299,7 @@ class Game:
     def get_economy_phase(self):
         return self._economy_phase
 
-    def print(self):
+    def stringify_board(self):
         """
         ┏━━━━━┳━━━━━┳━━━━━┳━━━━━┳━━━━━┳━━━━━┳━━━━━┳━━━━━┓
         ┃b2  ■┃     ┃    ◈┃     ┃     ┃     ┃     ┃    ◈┃
@@ -290,7 +324,7 @@ class Game:
         WHITE_PIECES = " BRDSAUZ"
         BLACK_PIECES = " brdsauz"
 
-        def stringify_tile(row, col):
+        def _stringify_tile(row, col):
             tile_out = ""
 
             # Letter for piece type
@@ -336,22 +370,174 @@ class Game:
 
             return tile_out
 
-        def print_row(row):
+        def _stringify_row(row):
             row_out = "┃"
             for col in range(8):
-                row_out += stringify_tile(row, col) + "┃"
-            print(row_out)
+                row_out += _stringify_tile(row, col) + "┃"
+            return row_out + "\n"
 
-        print("┏━━━━━┳━━━━━┳━━━━━┳━━━━━┳━━━━━┳━━━━━┳━━━━━┳━━━━━┓")
+        string = "┏━━━━━┳━━━━━┳━━━━━┳━━━━━┳━━━━━┳━━━━━┳━━━━━┳━━━━━┓\n"
         for row in range(7):
-            print_row(row)
-            print("┣━━━━━╋━━━━━╋━━━━━╋━━━━━╋━━━━━╋━━━━━╋━━━━━╋━━━━━┫")
-        print_row(7)
-        print("┗━━━━━┻━━━━━┻━━━━━┻━━━━━┻━━━━━┻━━━━━┻━━━━━┻━━━━━┛")
+            string += _stringify_row(row)
+            string += "┣━━━━━╋━━━━━╋━━━━━╋━━━━━╋━━━━━╋━━━━━╋━━━━━╋━━━━━┫\n"
+        string += _stringify_row(7)
+        string += "┗━━━━━┻━━━━━┻━━━━━┻━━━━━┻━━━━━┻━━━━━┻━━━━━┻━━━━━┛"
+
+        return string
+
+    def print_board(self):
+        print(self.stringify_board())
+
+    def stringify_sideboard(self):
+        output = ""
+        output += "----------------\n"
+        output += "WHITE:\n"
+        output += "Money: " + str(self._white_money) + "\n"
+        output += "Research:\n"
+        for tech in self._white_research:
+            if self._white_research[tech]:
+                output += self._NUMBER_TO_NAME[tech] + "\n"
+        output += "----------------\n"
+        output += "BLACK:\n"
+        output += "Money: " + str(self._black_money) + "\n"
+        output += "Research:\n"
+        for tech in self._black_research:
+            if self._black_research[tech]:
+                output += self._NUMBER_TO_NAME[tech] + "\n"
+        output += "----------------\n"
+
+        return output
+
+    def print_sideboard(self):
+        print(self.stringify_sideboard())
+
+    # Returns a list of objects of type Action
+    def get_possible_actions(self):
+        if self._player_to_move == 1:
+            money = self._white_money
+        else:
+            money = self._black_money
+
+        if self._player_to_move == 1:
+            tech = self._white_research
+        else:
+            tech = self._black_research
+
+        output = []
+        for row in range(8):
+            for col in range(8):
+                if self._pieces[row][col] * self._player_to_move > 0:
+                    output.extend(self._get_piece_actions_at(row, col))  # Move, Attack, Capture
+
+        # Place
+        if self._economy_phase:
+            for row in range(8):
+                for col in range(8):
+                    if self._cities[row][col] == self._player_to_move and self._pieces[row][col] == 0:
+                        # in each empty city the current player owns
+                        for piece_type in range(1, 8):
+                            # for each kind of piece
+                            if tech[piece_type] and money > self._C_MAP[piece_type]:
+                                output.append(Game.Action(Game.Action.TYPE_PLACE, (row, col), None, piece_type))
+
+        # Research
+        if not self._economy_phase:
+            for piece_type in range(1, 8):
+                if not tech[piece_type]:
+                    output.append(Game.Action(Game.Action.TYPE_RESEARCH, None, None, piece_type))
+
+        # Economy
+        if not self._economy_phase:
+            output.append(Game.Action(Game.Action.TYPE_ECONOMY, None, None, None))
+
+        # End Turn
+        if self._economy_phase:
+            output.append(Game.Action(Game.Action.TYPE_END_TURN, None, None, None))
+
+        return output
+
+    def _get_piece_actions_at(self, row, col):
+        output = []
+        # Capture
+        if (self._cities[row][col] is not None) and (self._cities[row][col] != self._player_to_move):
+            if self._move_ready[row][col] >= 1: # needs to have move readiness
+                if abs(self._pieces[row][col]) != 2 or self._move_ready[row][col] >= 2: # if it's a runner, it needs two move readiness
+                    output.append(Game.Action(Game.Action.TYPE_CAPTURE, (row, col)))
+
+        valid_directions = []
+        if row > 0:
+            if col > 0:
+                valid_directions.append((-1, -1))
+            if col < 7:
+                valid_directions.append((-1, 1))
+            valid_directions.append((-1, 0))
+        if row < 7:
+            if col > 0:
+                valid_directions.append((1, -1))
+            if col < 7:
+                valid_directions.append((1, 1))
+            valid_directions.append((1, 0))
+        if col > 0:
+            valid_directions.append((0, -1))
+        if col < 7:
+            valid_directions.append((0, 1))
+
+        for (row_heading, col_heading) in valid_directions:
+            target_row = row + row_heading
+            target_col = col + col_heading
+            # Move
+            if self._move_ready[row][col] > 0 and self._pieces[target_row][target_col] == 0:
+                output.append(Game.Action(Game.Action.TYPE_MOVE, (row, col), (row_heading, col_heading)))
+            # Attack
+            if self._attack_ready[row][col] > 0 and self._pieces[target_row][target_col] * self._player_to_move < 0:
+                output.append(Game.Action(Game.Action.TYPE_ATTACK, (row, col), (row_heading, col_heading)))
+
+        return output
+
+    # Expects an object of type Action
+    def take_action(self, action):
+        if not isinstance(action, Game.Action):
+            raise Exception("Did not pass a proper Action object")
+
+        if action.action_type == Game.Action.TYPE_MOVE:
+            self._move(action.space, action.heading)
+        elif action.action_type == Game.Action.TYPE_ATTACK:
+            self._attack(action.space, action.heading)
+        elif action.action_type == Game.Action.TYPE_CAPTURE:
+            self._capture(action.space)
+        elif action.action_type == Game.Action.TYPE_RESEARCH:
+            self._research(action.piece_type)
+        elif action.action_type == Game.Action.TYPE_ECONOMY:
+            self._economy()
+        elif action.action_type == Game.Action.TYPE_PLACE:
+            self._place(action.space, action.piece_type)
+        elif action.action_type == Game.Action.TYPE_END_TURN:
+            self._end_turn()
+        else:
+            raise Exception("Invalid action type")
+
+    def is_terminal(self):
+        return (self.get_reward() != 0)
+
+    def get_reward(self):
+        white_cities = False
+        black_cities = False
+        for row in self._cities:
+            for city in row:
+                if city == 1:
+                    white_cities = True
+                if city == -1:
+                    black_cities = True
+
+        if black_cities and not white_cities:
+            return -1
+        if white_cities and not black_cities:
+            return 1
+        return 0
 
     # Takes a space, either as a string of length 2 (e.g. "C3") or a tuple (e.g. (5, 2))
     # and a heading direction, either as a string of length 1 or 2 (e.g. "N" "SW") or a tuple (e.g. (-1, 0) (1,-1))
-    def move(self, space, heading):
+    def _move(self, space, heading):
         row, col, vertical_heading, horizontal_heading = self._parse_board_action(space, heading)
 
         target_row = row + vertical_heading
@@ -373,7 +559,7 @@ class Game:
         # the old tile is now empty
         self._clear_tile(row, col)
 
-    def attack(self, space, heading):
+    def _attack(self, space, heading):
         row, col, vertical_heading, horizontal_heading = self._parse_board_action(space, heading)
 
         target_row = row + vertical_heading
@@ -423,6 +609,22 @@ class Game:
             else:
                 self._hit(row, col, victim_R)  # if no kill, victim retaliates
 
+    def _capture(self, space):
+        row, col = self._parse_space(space)
+
+        if self._cities[row][col] is None:
+            raise Exception("Target space does not contain a city")
+        if self._cities[row][col] == self._player_to_move:
+            raise Exception("Target city is already under your control")
+        if self._pieces[row][col] * self._player_to_move <= 0:
+            raise Exception("You do not control a piece in target city")
+        if self._move_ready[row][col] == 0 or (abs(self._pieces[row][col]) == 2 and self._move_ready[row][col] == 1):
+            raise Exception("A piece that has already moved cannot capture a city until next turn")
+
+        self._cities[row][col] = self._player_to_move
+        self._move_ready[row][col] = 0
+        self._attack_ready[row][col] = 0
+
     @staticmethod
     def _parse_space(space):
         if isinstance(space, tuple):
@@ -450,22 +652,22 @@ class Game:
                 raise Exception("Heading had values with magnitude greater than 1")
         elif isinstance(heading, str):
             vertical_heading, horizontal_heading = (999, 999)  # Pycharm gets mad if I don't do this
-            match heading:
-                case "N":
+            match heading.lower():
+                case "n":
                     vertical_heading, horizontal_heading = (-1, 0)
-                case "NE":
+                case "ne":
                     vertical_heading, horizontal_heading = (-1, 1)
-                case "E":
+                case "e":
                     vertical_heading, horizontal_heading = (0, 1)
-                case "SE":
+                case "se":
                     vertical_heading, horizontal_heading = (1, 1)
-                case "S":
+                case "s":
                     vertical_heading, horizontal_heading = (1, 0)
-                case "SW":
+                case "sw":
                     vertical_heading, horizontal_heading = (1, -1)
-                case "W":
+                case "w":
                     vertical_heading, horizontal_heading = (0, -1)
-                case "NW":
+                case "nw":
                     vertical_heading, horizontal_heading = (-1, -1)
                 case "_":
                     raise Exception("Heading string was invalid: " + heading)
@@ -549,7 +751,7 @@ class Game:
 
         self._bless[target_row][target_col] = 1
 
-    def research(self, piece_type):
+    def _research(self, piece_type):
         if self._economy_phase:
             raise Exception("Cannot Research during Economy Phase")
 
@@ -566,9 +768,9 @@ class Game:
             self._black_research[piece_type] = True
 
         self._unready()
-        self.end_turn()
+        self._end_turn()
 
-    def economy(self):
+    def _economy(self):
         if self._economy_phase:
             raise Exception("Already in the Economy Phase")
 
@@ -587,7 +789,7 @@ class Game:
         else:
             self._black_money += income
 
-    def place(self, space, piece_type):
+    def _place(self, space, piece_type):
         if not self._economy_phase:
             raise Exception("Trying to place a piece while not in the Economy Phase")
 
@@ -622,8 +824,9 @@ class Game:
             self._black_money -= cost
 
         self._pieces[row][col] = self._player_to_move * piece_type
+        self._piece_health[row][col] = self._M_MAP[piece_type]
 
-    def end_turn(self):
+    def _end_turn(self):
         self._player_to_move *= -1
         self._economy_phase = False
         self._ready()
