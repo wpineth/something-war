@@ -10,8 +10,8 @@ def main():
     game_state = game.Game()
     turn_num = 0
 
-    # white_agent = typing_human_agent.TypingHumanAgent()
-    white_agent = random_agent.RandomAgent()
+    white_agent = typing_human_agent.TypingHumanAgent()
+    # white_agent = random_agent.RandomAgent()
     black_agent = random_agent.RandomAgent()
 
     while not game_state.is_terminal():
