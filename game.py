@@ -488,9 +488,23 @@ class Game:
             # Move
             if self._move_ready[row][col] > 0 and self._pieces[target_row][target_col] == 0:
                 output.append(Game.Action(Game.Action.TYPE_MOVE, (row, col), (row_heading, col_heading)))
+
             # Attack
-            if self._attack_ready[row][col] > 0 and self._pieces[target_row][target_col] * self._player_to_move < 0:
-                output.append(Game.Action(Game.Action.TYPE_ATTACK, (row, col), (row_heading, col_heading)))
+            if self._attack_ready[row][col] > 0:
+                if self._pieces[target_row][target_col] * self._player_to_move < 0:
+                    output.append(Game.Action(Game.Action.TYPE_ATTACK, (row, col), (row_heading, col_heading)))
+
+                # Bless is a type of attack
+                elif abs(self._pieces[row][col]) == 6: #support
+                    if self._pieces[target_row][target_col] * self._player_to_move > 0: #if ally at target space
+                        output.append(Game.Action(Game.Action.TYPE_ATTACK, (row, col), (row_heading, col_heading)))
+
+                elif abs(self._pieces[row][col]) == 5: #archer
+                    target_row = row + 2*row_heading
+                    target_col = col + 2*col_heading
+                    if 0 <= target_row <= 7 and 0 <= target_col <= 7:
+                        if self._pieces[target_row][target_col] * self._player_to_move < 0: #if enemy at target space
+                            output.append(Game.Action(Game.Action.TYPE_ATTACK, (row, col), (row_heading, col_heading)))
 
         return output
 
@@ -580,9 +594,11 @@ class Game:
             if attacker_type == 5:  # Archer
                 # Archers trying to attack a space with no enemy should check further in that direction
                 self._archer_attack(row, col, vertical_heading, horizontal_heading)
-            if attacker_type == 6:  # Support
+                return
+            elif attacker_type == 6:  # Support
                 # Supports trying to attack a space with no enemy might be trying to bless an ally
                 self._support_attack(row, col, vertical_heading, horizontal_heading)
+                return
             else:
                 raise Exception("Target space does not contain an enemy")
 
@@ -591,11 +607,13 @@ class Game:
 
         if self._bless[target_row][target_col] == 1:  # if victim blessed
             self._attack_ready[row][col] = 0  # attacker has no more attack (even Berserker as it failed to kill)
+            self._move_ready[row][col] = 0
 
             self._hit(target_row, target_col, attacker_A)  # victim will survive this because it's blessed
             self._hit(row, col, victim_R + 1)  # victim hits back with +1 to its R
         else:
             self._attack_ready[row][col] = 0  # attacker has no more attack
+            self._move_ready[row][col] = 0
 
             kill = self._hit(target_row, target_col, attacker_A)
 
@@ -734,6 +752,8 @@ class Game:
             raise Exception("Target space does not contain an enemy")
 
         self._hit(target_row, target_col, self._A_MAP[5])
+        self._attack_ready[row][col] = 0
+        self._move_ready[row][col] = 0
 
     def _support_attack(self, row, col, vertical_heading, horizontal_heading):
         target_row = row + vertical_heading
@@ -750,6 +770,8 @@ class Game:
             raise Exception("Target is already blessed")
 
         self._bless[target_row][target_col] = 1
+        self._attack_ready[row][col] = 0
+        self._move_ready[row][col] = 0
 
     def _research(self, piece_type):
         if self._economy_phase:
