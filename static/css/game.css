@@ -1,86 +1,115 @@
-td{
+div#game{
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    width: 100vw;
+    height: 66.67vw;
+}
+
+div.panel{
+    height: 41.67vw;
+    flex-grow: 2;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+}
+
+div.board{
+    flex-grow: 8;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+}
+
+div.row{
+    flex-grow: 1;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+}
+
+div.row > div.cell{
+    flex-grow: 1;
     position: relative;
-    width: 100px;
-    height: 100px;
-    padding: 0px;
-    background-color: lightgrey;
-}
-
-td > div{
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 80px;
-    height: 80px;
-    margin: 0px;
-    padding: 0px;
-    outline: 2px solid black;
-    transform: translate(-50%, -50%);
-}
-
-td > div.white{
-    background-color: white;
-}
-
-td > div.black{
-    background-color: black;
-}
-
-td > div.neutral{
-    background-color: gray;
-}
-
-td > div > div{
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 60px;
-    height: 60px;
     margin: 0px;
     padding: 0px;
     outline: 2px solid gray;
-    transform: translate(-50%, -50%);
 }
 
-td > div > div.white{
-    background-color: white;
+div.cell > p{
+    position: absolute;
+    font-size: 1.5vw;
 }
 
-td > div > div.black{
-    background-color: black;
+div.city{
+    width: 80%;
+    height: 80%;
 }
 
-td > div > div.white > p{
-    color: black;
+div.piece{
+    width: 80%;
+    height: 80%;
 }
 
-td > div > div.black > p{
-    color: white;
-}
-
-td > div > div > p.health{
+div.piece > p.health{
     position: absolute;
     top: 25%;
     left: 50%;
     margin: 0px;
-    font-size: 1em;
+    font-size: 1.5vw;
     transform: translate(-50%, -50%);
 }
 
-td > div > div > p.attack{
+div.piece > p.attack{
     position: absolute;
     top: 75%;
     left: 25%;
     margin: 0px;
-    font-size: 1em;
+    font-size: 1.5vw;
     transform: translate(-50%, -50%);
 }
 
-td > div > div > p.retaliation{
+div.piece > p.retaliation{
     position: absolute;
     top: 75%;
     left: 75%;
     margin: 0px;
-    font-size: 1em;
+    font-size: 1.5vw;
     transform: translate(-50%, -50%);
+}
+
+div.glow{
+    box-shadow: 0px 0px 5px 5px yellow;
+}
+
+.center{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin: 0px;
+    padding: 0px;
+    transform: translate(-50%, -50%);
+}
+
+div.white{
+    background-color: white;
+    outline: 2px solid gray;
+}
+
+div.black{
+    background-color: black;
+    outline: 2px solid gray;
+}
+
+div.neutral{
+    background-color: gray;
+    outline: 2px solid lightgray;
+}
+
+div.white > p{
+    color: black;
+}
+
+div.black > p{
+    color: white;
 }

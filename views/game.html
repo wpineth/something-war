@@ -8,6 +8,8 @@
     <script>
       window.game.initialize().then(() => {
         window.game.render();
+      }).catch((err) => {
+        console.log(err);
       });
     </script>
   </head>
