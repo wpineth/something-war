@@ -107,8 +107,35 @@ window.game = {
                         cell = cell.parentElement;
                     }
 
-                    if(cell.id != "game" && !cell.id.startsWith(window.game.other_player) && !cell.id.startsWith(window.game.other_player)){
-                        if(window.game.selected == null){
+                    if(cell.id != "game" && !cell.id.startsWith(window.game.other_player)){
+                        if(cell.id == window.game.player + "_panel_0"){
+                            var research = null;
+                            if(window.game.selected != null){
+                                if(window.game.selected.startsWith(window.game.player)){
+                                    research = parseInt(window.game.selected.split('_')[2]);
+                                }
+
+                                document.getElementById(window.game.selected).classList.remove("glow");
+                                
+                                window.game.selected = null;
+                            }
+
+                            fetch("/game/status", {
+                                method: "POST",
+                                headers: {
+                                  "Content-Type": "application/json"
+                                },
+                                body: JSON.stringify({
+                                    research: research
+                                })
+                            }).then((response) => response.json()).then((data) => {
+                                window.game.state = data;
+                                
+                                window.game.render();
+                            }).catch((err) => {
+                                console.log(err);
+                            });
+                        }else if(window.game.selected == null){
                             cell.classList.add("glow");
                             window.game.start_action(cell.id);
                         }else if(!cell.id.startsWith(window.game.player)){
@@ -208,17 +235,13 @@ window.game = {
                             break;
                     }
 
+                    var is_city = Array.from(board.children[i].children[j].children[0].classList).includes("city");
+
                     var health = document.createElement("p");
 
                         health.innerHTML = window.game.state.piece_health[i][j] + "/" + window.game.state.max_health[Math.abs(piece).toString()];
 
                         health.classList.add("health");
-
-                    if(board.children[i].children[j].children[0].children.length > 0){
-                        board.children[i].children[j].children[0].children[0].appendChild(health);
-                    }else{
-                        board.children[i].children[j].children[0].appendChild(health);
-                    }
 
                     var attack = document.createElement("p");
 
@@ -226,20 +249,18 @@ window.game = {
 
                         attack.classList.add("attack");
 
-                    if(board.children[i].children[j].children[0].children.length > 0){
-                        board.children[i].children[j].children[0].children[0].appendChild(attack);
-                    }else{
-                        board.children[i].children[j].children[0].appendChild(attack);
-                    }
-
                     var retaliation = document.createElement("p");
                         retaliation.innerHTML = window.game.state.retaliation[Math.abs(piece).toString()];
 
                         retaliation.classList.add("retaliation");
 
-                    if(board.children[i].children[j].children[0].children.length > 0){
+                    if(is_city){
+                        board.children[i].children[j].children[0].children[0].appendChild(health);
+                        board.children[i].children[j].children[0].children[0].appendChild(attack);
                         board.children[i].children[j].children[0].children[0].appendChild(retaliation);
                     }else{
+                        board.children[i].children[j].children[0].appendChild(health);
+                        board.children[i].children[j].children[0].appendChild(attack);
                         board.children[i].children[j].children[0].appendChild(retaliation);
                     }
                 }
@@ -253,16 +274,17 @@ window.game = {
     end_action: function(value){
         var c1 = window.game.selected;
         var c2 = value;
-        
+
         document.getElementById(c1).classList.remove("glow");
         document.getElementById(c2).classList.remove("glow");
 
         window.game.selected = null;
 
         window.game.act(c1, c2).then(() => {
-            window.game.refresh().then(() => {
-                window.game.render();
-            });
+            window.game.render();
+            // window.game.refresh().then(() => {
+            //     window.game.render();
+            // });
         });
     },
     act: function(c1, c2){
@@ -275,26 +297,36 @@ window.game = {
                 t2 = c2.split("-");
     
                 t2[0] = parseInt(t2[0]);
-                t2[1] = parseInt(t2[0]);
+                t2[1] = parseInt(t2[1]);
             }else{
                 t1 = c1.split("-");
     
                 t1[0] = parseInt(t1[0]);
-                t1[1] = parseInt(t1[0]);
+                t1[1] = parseInt(t1[1]);
                 
                 t2 = c2.split("-");
     
                 t2[0] = parseInt(t2[0]);
-                t2[1] = parseInt(t2[0]);    
+                t2[1] = parseInt(t2[1]);    
             }
 
             console.log(t1, t2);
-        //     fetch("/game/status").then((response) => response.json()).then((data) => {
-        //         window.game.state = data;
+
+            fetch("/game/status", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    t1: t1,
+                    t2: t2
+                })
+            }).then((response) => response.json()).then((data) => {
+                window.game.state = data;
                 resolve();
-        //     }).catch((err) => {
-        //         reject(err);
-        //     });
+            }).catch((err) => {
+                reject(err);
+            });
         });
     },
     refresh: function(){

@@ -59,4 +59,57 @@ def status():
         
         return response
     elif(request.method == 'POST'):
-        return 'post_test'
+        response = make_response()
+
+        user = request.cookies.get('user')
+        if(user == None):
+            user = str(len(games))
+            response.set_cookie('user', user)
+            games.append(Game())
+
+        user = int(user)
+
+        while(len(games) < user + 1):
+            games.append(Game())
+        
+        game = games[user]
+        
+        try:
+            if 't1' in request.json:
+                if type(request.json['t1']) is list:
+                    game.take_action(game.infer_action(tuple(request.json['t1']), tuple(request.json['t2'])))
+                else:
+                    #create
+                    game.take_action(Game.Action(Game.Action.TYPE_PLACE, tuple(request.json['t2']), None, request.json['t1']))
+                    pass
+            else:
+                #research
+                if 'research' in request.json:
+                    game.take_action(Game.Action(Game.Action.TYPE_RESEARCH, None, None, request.json['research']))
+                    game.take_action(Game.Action(Game.Action.TYPE_END_TURN, None, None, None))
+                else:
+                    game.take_action(Game.Action(Game.Action.TYPE_END_TURN, None, None, None))
+        except Exception as e:
+            print(e)
+        
+        response.response = json.dumps({
+            'max_health': game._M_MAP,
+            'attack': game._A_MAP,
+            'retaliation': game._R_MAP,
+            'cost': game._C_MAP,
+            'attack_ready': game.get_attack_ready(),
+            'black_money': game.get_black_money(),
+            'black_research': game.get_black_research(),
+            'bless': game.get_bless(),
+            'cities': game.get_cities(),
+            'economy_phase': game.get_economy_phase(),
+            'move_ready': game.get_move_ready(),
+            'piece_health': game.get_piece_health(),
+            'pieces': game.get_pieces(),
+            'player_to_move': game.get_player_to_move(),
+            'white_money': game.get_white_money(),
+            'white_research': game.get_white_research()
+        })
+        
+        return response
+        print(request.json)
