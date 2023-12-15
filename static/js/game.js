@@ -22,6 +22,20 @@ window.game = {
                 var black_panel = document.createElement("div");
                     black_panel.classList.add("black");
                     black_panel.classList.add("panel");
+                    
+                    var row = document.createElement("div");
+                        row.classList.add("black");
+                        row.classList.add("row");
+                        var cell = document.createElement("div");
+                            cell.classList.add("black");
+                            cell.classList.add("cell");
+                            cell.id = "black_phase";
+
+                            var phase = document.createElement("p");
+                                phase.classList.add("center");
+                            cell.appendChild(phase);
+                        row.appendChild(cell);
+                    black_panel.appendChild(row);
 
                     for(var i = 0; i < 4; i++){
                         var row = document.createElement("div");
@@ -74,11 +88,25 @@ window.game = {
                 var white_panel = document.createElement("div");
                     white_panel.classList.add("white");
                     white_panel.classList.add("panel");
+                    
+                    var row = document.createElement("div");
+                        row.classList.add("white");
+                        row.classList.add("row");
+                        var cell = document.createElement("div");
+                            cell.classList.add("white");
+                            cell.classList.add("cell");
+                            cell.id = "white_phase";
+
+                            var phase = document.createElement("p");
+                                phase.classList.add("center");
+                            cell.appendChild(phase);
+                        row.appendChild(cell);
+                    white_panel.appendChild(row);
 
                     for(var i = 0; i < 4; i++){
                         var row = document.createElement("div");
-                        row.classList.add("white");
-                        row.classList.add("row");
+                            row.classList.add("white");
+                            row.classList.add("row");
                             for(var j = 0; j < 2; j++){
                                 var cell = document.createElement("div");
                                     cell.classList.add("white");
@@ -101,6 +129,10 @@ window.game = {
                 view_port.appendChild(white_panel);
 
                 view_port.addEventListener("click", (event) => {
+                    if((window.game.player == "black" && window.game.state.player_to_move == 1) || (window.game.player == "white" && window.game.state.player_to_move == -1)){
+                        return;
+                    }
+
                     var cell = event.target;
                     
                     while(!cell.id){
@@ -108,7 +140,7 @@ window.game = {
                     }
 
                     if(cell.id != "game" && !cell.id.startsWith(window.game.other_player)){
-                        if(cell.id == window.game.player + "_panel_0"){
+                        if(cell.id == window.game.player + "_phase"){
                             var research = null;
                             if(window.game.selected != null){
                                 if(window.game.selected.startsWith(window.game.player)){
@@ -120,27 +152,49 @@ window.game = {
                                 window.game.selected = null;
                             }
 
-                            fetch("/game/status", {
-                                method: "POST",
-                                headers: {
-                                  "Content-Type": "application/json"
-                                },
-                                body: JSON.stringify({
-                                    research: research
-                                })
-                            }).then((response) => response.json()).then((data) => {
-                                window.game.state = data;
-                                
-                                window.game.render();
-                            }).catch((err) => {
-                                console.log(err);
-                            });
-                        }else if(window.game.selected == null){
-                            cell.classList.add("glow");
-                            window.game.start_action(cell.id);
-                        }else if(!cell.id.startsWith(window.game.player)){
-                            cell.classList.add("glow");
-                            window.game.end_action(cell.id);
+                            if(research == null && window.game.state.economy_phase){
+                                fetch("/game/status", {
+                                    method: "POST",
+                                    headers: {
+                                      "Content-Type": "application/json"
+                                    },
+                                    body: JSON.stringify({
+                                        economy_phase: false
+                                    })
+                                }).then((response) => response.json()).then((data) => {
+                                    window.game.state = data;
+                                    
+                                    window.game.render();
+                                }).catch((err) => {
+                                    console.log(err);
+                                });
+                            }else{
+                                fetch("/game/status", {
+                                    method: "POST",
+                                    headers: {
+                                      "Content-Type": "application/json"
+                                    },
+                                    body: JSON.stringify({
+                                        research: research
+                                    })
+                                }).then((response) => response.json()).then((data) => {
+                                    window.game.state = data;
+                                    
+                                    window.game.render();
+                                }).catch((err) => {
+                                    console.log(err);
+                                });
+                            }
+                        }else{
+                            if(cell.id != window.game.player + "_panel_0"){
+                                if(window.game.selected == null){
+                                    cell.classList.add("glow");
+                                    window.game.start_action(cell.id);
+                                }else if(!cell.id.startsWith(window.game.player)){
+                                    cell.classList.add("glow");
+                                    window.game.end_action(cell.id);
+                                }
+                            }
                         }
                     }
                 });
@@ -155,6 +209,27 @@ window.game = {
         var view_port = document.getElementById("game");
         var board = view_port.children[1];
 
+        if(window.game.state.player_to_move == 1){
+            document.getElementById("black_phase").children[0].innerText = "It's White's turn...";
+
+            if(window.game.state.economy_phase){
+                document.getElementById("white_phase").children[0].innerText = "Economy";
+            }else{
+                document.getElementById("white_phase").children[0].innerText = "Command";
+            }
+        }else{
+            document.getElementById("white_phase").children[0].innerText = "It's White's turn...";
+
+            if(window.game.state.economy_phase){
+                document.getElementById("black_phase").children[0].innerText = "Economy";
+            }else{
+                document.getElementById("black_phase").children[0].innerText = "Command";
+            }
+        }
+        
+        if(window.game.state.economy_phase){player_to_move
+            document.getElementById("black_phase").children[1].innerText = "$" + window.game.state.black_money;
+        }
         document.getElementById("black_panel_0").children[1].innerText = "$" + window.game.state.black_money;
         document.getElementById("white_panel_0").children[1].innerText = "$" + window.game.state.black_money;
 

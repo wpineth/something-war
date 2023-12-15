@@ -87,6 +87,8 @@ def status():
                 if 'research' in request.json:
                     game.take_action(Game.Action(Game.Action.TYPE_RESEARCH, None, None, request.json['research']))
                     game.take_action(Game.Action(Game.Action.TYPE_END_TURN, None, None, None))
+                elif 'economy_phase' in request.json:
+                    game.take_action(Game.Action(Game.Action.TYPE_ECONOMY, None, None, None))
                 else:
                     game.take_action(Game.Action(Game.Action.TYPE_END_TURN, None, None, None))
         except Exception as e:
