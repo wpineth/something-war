@@ -1,13 +1,23 @@
 <html>
-    <head>
-        <title>Game</title>
+  <head>
+    <title>Game</title>
 
-        <link rel="stylesheet" type="text/css" href="/css/game.css">
-        <script src="/js/game.js"></script>
-    </head>
-    <body>
-        <p>
-            Game!
-        </p>
-    </body>
+    <link rel="stylesheet" type="text/css" href="/css/game.css">
+    <script src="/js/game.js"></script>
+
+    <script>
+      window.game.initialize().then(() => {
+        window.game.render();
+      }).catch((err) => {
+        console.log(err);
+      });
+    </script>
+  </head>
+  <body>
+    <p>
+      Game!
+    </p>
+
+    <div id="game"></div>
+  </body>
 </html>
