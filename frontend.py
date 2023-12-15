@@ -2,7 +2,13 @@ from game import Game
 
 from flask import Flask, send_file, send_from_directory, request, make_response, json
 
+from ai_agent import AIAgent
+
+
+adversary = AIAgent
+
 games = []
+agents = []
 
 app = Flask(__name__, static_url_path='', static_folder='static')
 
@@ -31,11 +37,13 @@ def status():
             user = str(len(games))
             response.set_cookie('user', user)
             games.append(Game())
+            agents.append(adversary())
 
         user = int(user)
 
         while(len(games) < user + 1):
             games.append(Game())
+            agents.append(adversary())
         
         game = games[user]
         response.response = json.dumps({
@@ -66,13 +74,16 @@ def status():
             user = str(len(games))
             response.set_cookie('user', user)
             games.append(Game())
+            agents.append(adversary())
 
         user = int(user)
 
         while(len(games) < user + 1):
             games.append(Game())
+            agents.append(adversary())
         
         game = games[user]
+        agent = agents[user]
         
         try:
             if 't1' in request.json:
@@ -87,10 +98,14 @@ def status():
                 if 'research' in request.json and request.json['research'] != None:
                     game.take_action(Game.Action(Game.Action.TYPE_RESEARCH, None, None, request.json['research']))
                     game.take_action(Game.Action(Game.Action.TYPE_END_TURN, None, None, None))
+                    while game.get_player_to_move() == -1:
+                        agent.decide_action(game)
                 elif 'economy_phase' in request.json:
                     game.take_action(Game.Action(Game.Action.TYPE_ECONOMY, None, None, None))
                 else:
                     game.take_action(Game.Action(Game.Action.TYPE_END_TURN, None, None, None))
+                    while game.get_player_to_move() == -1:
+                        agent.decide_action(game)
         except Exception as e:
             print(e)
         
