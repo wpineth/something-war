@@ -280,16 +280,17 @@ window.game = {
                 if(piece != 0){
                     console.log(board.children[i].children[j].children.length > 0)
                     var pieceElement = document.createElement("div");
-                        pieceElement.classList.add("piece");
-                        pieceElement.classList.add("center");
                         if(piece > 0){
-                            pieceElement.style.cssText = "";
                             pieceElement.classList.add("white");
                         }else{
-                            pieceElement.style.cssText = "";
                             pieceElement.classList.add("black");
                         }
+                        pieceElement.classList.add("piece");
+                        pieceElement.classList.add("center");
                         pieceElement.style.backgroundImage = "url(img/" + Math.abs(piece) + ".png)";
+                        pieceElement.style.backgroundRepeat = "no-repeat";
+                        pieceElement.style.backgroundSize = "25% 25%";
+                        pieceElement.style.backgroundPosition = "center";
 
                     if(board.children[i].children[j].children.length > 0){
                         board.children[i].children[j].children[0].appendChild(pieceElement);
@@ -342,6 +343,16 @@ window.game = {
                         board.children[i].children[j].children[0].appendChild(health);
                         board.children[i].children[j].children[0].appendChild(attack);
                         board.children[i].children[j].children[0].appendChild(retaliation);
+                    }
+
+                    if(piece < 0){
+                        pieceElement.style.backgroundColor = "white";
+                        pieceElement.style.filter = "invert(1)";
+                        
+                        for(var k = 0; k < pieceElement.children.length; k++){
+                            pieceElement.children[k].style.backgroundColor = "black";
+                            pieceElement.children[k].style.filter = "invert(1)";
+                        }
                     }
                 }
             }
