@@ -228,7 +228,7 @@ window.game = {
         }
 
         document.getElementById("black_panel_0").children[1].innerText = "$" + window.game.state.black_money;
-        document.getElementById("white_panel_0").children[1].innerText = "$" + window.game.state.black_money;
+        document.getElementById("white_panel_0").children[1].innerText = "$" + window.game.state.white_money;
 
         for(var i = 1; i < 8; i++){
             if(window.game.state.black_research[i]){
