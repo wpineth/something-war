@@ -559,7 +559,9 @@ class Game:
         if self._pieces[row][col] * self._player_to_move <= 0:
             raise Exception("Source Square Empty")
 
-        if self._pieces[target_row][target_col] == 0:
+        if row == target_row and col == target_col:
+            action = Game.Action(Game.Action.TYPE_CAPTURE, source, None, None)
+        elif self._pieces[target_row][target_col] == 0:
             action = Game.Action(Game.Action.TYPE_MOVE, source, heading, None)
         else:
             action = Game.Action(Game.Action.TYPE_ATTACK, source, heading, None)

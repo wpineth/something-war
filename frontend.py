@@ -59,7 +59,6 @@ def status():
                 #research
                 if 'research' in request.json and request.json['research'] != None:
                     game.take_action(Game.Action(Game.Action.TYPE_RESEARCH, None, None, request.json['research']))
-                    game.take_action(Game.Action(Game.Action.TYPE_END_TURN, None, None, None))
                     while game.get_player_to_move() == -1:
                         game.take_action(agent.decide_action(game))
                 elif 'economy_phase' in request.json:
