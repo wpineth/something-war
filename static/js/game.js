@@ -278,37 +278,29 @@ window.game = {
                 }
 
                 if(piece != 0){
-                    switch(piece){
-                        case -1:
-                            var pieceElement = document.createElement("div");
+                    console.log(board.children[i].children[j].children.length > 0)
+                    var pieceElement = document.createElement("div");
+                        pieceElement.classList.add("piece");
+                        pieceElement.classList.add("center");
+                        if(piece > 0){
+                            pieceElement.style.cssText = "";
+                            pieceElement.classList.add("white");
+                        }else{
+                            pieceElement.style.cssText = "";
+                            pieceElement.classList.add("black");
+                        }
+                        pieceElement.style.backgroundImage = "url(img/" + Math.abs(piece) + ".png)";
 
-                                pieceElement.classList.add("black");
-                                pieceElement.classList.add("piece");
-                                pieceElement.classList.add("center");
-
-                            if(board.children[i].children[j].children.length > 0){
-                                board.children[i].children[j].children[0].appendChild(pieceElement);
-                            }else{
-                                board.children[i].children[j].appendChild(pieceElement);
-                            }
-                            break;
-                        case 1:
-                            var pieceElement = document.createElement("div");
-
-                                pieceElement.classList.add("white");
-                                pieceElement.classList.add("piece");
-                                pieceElement.classList.add("center");
-
-                            if(board.children[i].children[j].children.length > 0){
-                                board.children[i].children[j].children[0].appendChild(pieceElement);
-                            }else{
-                                board.children[i].children[j].appendChild(pieceElement);
-                            }
-                            break;
+                    if(board.children[i].children[j].children.length > 0){
+                        board.children[i].children[j].children[0].appendChild(pieceElement);
+                    }else{
+                        board.children[i].children[j].appendChild(pieceElement);
                     }
 
                     var is_city = Array.from(board.children[i].children[j].children[0].classList).includes("city");
 
+                    console.log(board.children[i].children[j])
+                    console.log(is_city)
                     var health = document.createElement("p");
 
                         if(window.game.state.bless[i][j] == 1){
@@ -370,9 +362,6 @@ window.game = {
 
         window.game.act(c1, c2).then(() => {
             window.game.render();
-            // window.game.refresh().then(() => {
-            //     window.game.render();
-            // });
         });
     },
     act: function(c1, c2){
