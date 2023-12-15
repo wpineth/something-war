@@ -549,6 +549,21 @@ class Game:
             return 1
         return 0
 
+    # in the gui, actions are taken as a source space and target space. This takes that and turns it into an Action object
+    def infer_action(self, source, target):
+        row, col = source
+        target_row, target_col = target
+
+        heading = (target_row - row, target_col - col)
+
+        if self._pieces[row][col] * self._player_to_move <= 0:
+            raise Exception("Source Square Empty")
+
+        if self._pieces[target_row][target_col] == 0:
+            action = Game.Action(Game.Action.TYPE_MOVE, source, heading, None)
+        else:
+            action = Game.Action(Game.Action.TYPE_ATTACK, source, heading, None)
+
     # Takes a space, either as a string of length 2 (e.g. "C3") or a tuple (e.g. (5, 2))
     # and a heading direction, either as a string of length 1 or 2 (e.g. "N" "SW") or a tuple (e.g. (-1, 0) (1,-1))
     def _move(self, space, heading):
