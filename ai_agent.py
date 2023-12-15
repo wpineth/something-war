@@ -3,32 +3,41 @@ import time
 import math
 import random
 import game as g
+import copy
 
 
 class AIAgent(Agent):
     def decide_action(self, gametosearch: g.Game):
-        try:
-            actiontotake = mcts(timeLimit=1000).search(gametosearch, needDetails=True)
-            print("You got here")
-            return actiontotake
-        except Exception:
-            return self.decide_action(gametosearch)
+        actiontotake = mcts(timeLimit=1000).search(gametosearch, needDetails=True)
+        return actiontotake
 
 
 # Some of the following code taken from the MCTS.py package on PyPi
 
 
-def randomPolicy(game):
+def randomPolicy(game2):
+    game = copy.deepcopy(game2)
     while not game.is_terminal():
         try:
             action = random.choice(game.get_possible_actions())
         except IndexError:
             raise Exception("Non-terminal game has no possible actions: " + str(game))
-        game.take_action(action)
+        try:
+            game.take_action(action)
+        except Exception as e:
+            print("oops, threw an exception!")
+            print(e.args[0])
+            game.print_board()
+            game.print_sideboard()
+            print(action.action_type)
+            print(action.space)
+            print(action.heading)
+            print(action.piece_type)
+            raise Exception(e)
     return game.get_reward()
 
 
-class treeNode():
+class treeNode:
     def __init__(self, game, parent):
         self.game = game
         self.is_terminal = game.is_terminal()
@@ -80,13 +89,11 @@ class mcts():
         bestChild = self.getBestChild(self.root, 0)
         action = (action for action, node in self.root.children.items() if node is bestChild).__next__()
         if needDetails:
-            print("action:", str(action), "expectedReward:", str(bestChild.totalReward / bestChild.numVisits))
+            print("action: ", str(action), "expectedReward:", str(bestChild.totalReward / bestChild.numVisits))
         return action
 
     def executeRound(self):
-        """
-            execute a selection-expansion-simulation-backpropagation round
-        """
+        # execute a selection-expansion-simulation-backpropagation round
         node = self.selectNode(self.root)
         reward = self.rollout(node.game)
         self.backpropagate(node, reward)
@@ -103,13 +110,12 @@ class mcts():
         actions = node.game.get_possible_actions()
         for action in actions:
             if action not in node.children:
-                node.game.take_action(action)
                 newNode = treeNode(node.game, node)
+                newNode.game.take_action(action)
                 node.children[action] = newNode
                 if len(actions) == len(node.children):
                     node.isFullyExpanded = True
                 return newNode
-
         raise Exception("Should never reach here")
 
     def backpropagate(self, node, reward):
