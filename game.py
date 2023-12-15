@@ -496,7 +496,7 @@ class Game:
 
                 # Bless is a type of attack
                 elif abs(self._pieces[row][col]) == 6: #support
-                    if self._pieces[target_row][target_col] * self._player_to_move > 0: #if ally at target space
+                    if self._pieces[target_row][target_col] * self._player_to_move > 0 and self._bless[target_row][target_col] == 0: #if ally at target space
                         output.append(Game.Action(Game.Action.TYPE_ATTACK, (row, col), (row_heading, col_heading)))
 
                 elif abs(self._pieces[row][col]) == 5: #archer
