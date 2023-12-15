@@ -152,7 +152,7 @@ window.game = {
                                 window.game.selected = null;
                             }
 
-                            if(research == null && window.game.state.economy_phase){
+                            if(research == null && !window.game.state.economy_phase){
                                 fetch("/game/status", {
                                     method: "POST",
                                     headers: {
@@ -226,10 +226,7 @@ window.game = {
                 document.getElementById("black_phase").children[0].innerText = "Command";
             }
         }
-        
-        if(window.game.state.economy_phase){player_to_move
-            document.getElementById("black_phase").children[1].innerText = "$" + window.game.state.black_money;
-        }
+
         document.getElementById("black_panel_0").children[1].innerText = "$" + window.game.state.black_money;
         document.getElementById("white_panel_0").children[1].innerText = "$" + window.game.state.black_money;
 
