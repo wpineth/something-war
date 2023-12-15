@@ -311,7 +311,23 @@ window.game = {
 
                     var health = document.createElement("p");
 
-                        health.innerHTML = window.game.state.piece_health[i][j] + "/" + window.game.state.max_health[Math.abs(piece).toString()];
+                        if(window.game.state.bless[i][j] == 1){
+                            health.innerHTML = "*";
+                        }else{
+                            health.innerHTML = "";
+                        }
+
+                        if(window.game.state.attack_ready[i][j] == 1){
+                            health.innerHTML += ".";
+                        }
+
+                        if(window.game.state.move_ready[i][j] != 0){
+                            for(var k = 0; k < window.game.state.move_ready[i][j]; k++){
+                                health.innerHTML += "!";
+                            }
+                        }
+
+                        health.innerHTML += window.game.state.piece_health[i][j] + "/" + window.game.state.max_health[Math.abs(piece).toString()];
 
                         health.classList.add("health");
 
