@@ -564,6 +564,8 @@ class Game:
         else:
             action = Game.Action(Game.Action.TYPE_ATTACK, source, heading, None)
 
+        return action
+
     # Takes a space, either as a string of length 2 (e.g. "C3") or a tuple (e.g. (5, 2))
     # and a heading direction, either as a string of length 1 or 2 (e.g. "N" "SW") or a tuple (e.g. (-1, 0) (1,-1))
     def _move(self, space, heading):
