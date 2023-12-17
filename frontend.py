@@ -2,9 +2,9 @@ from game import Game
 
 from flask import Flask, send_file, send_from_directory, request, make_response, json
 
-from random_agent import RandomAgent
+from ai_agent import AIAgent
 
-adversary = RandomAgent
+adversary = AIAgent
 
 games = []
 agents = []
