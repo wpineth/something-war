@@ -2,9 +2,9 @@ from game import Game
 
 from flask import Flask, send_file, send_from_directory, request, make_response, json
 
-from random_agent import RandomAgent
+from ai_agent import AIAgent
 
-adversary = RandomAgent
+adversary = AIAgent
 
 games = []
 agents = []
@@ -28,62 +28,25 @@ def game():
     'POST'
 ])
 def status():
-    if(request.method == 'GET'):
-        response = make_response()
+    response = make_response()
 
-        user = request.cookies.get('user')
-        if(user == None):
-            user = str(len(games))
-            response.set_cookie('user', user)
-            games.append(Game())
-            agents.append(adversary())
+    user = request.cookies.get('user')
+    if(user == None):
+        user = str(len(games))
+        response.set_cookie('user', user)
+        games.append(Game())
+        agents.append(adversary())
 
-        user = int(user)
+    user = int(user)
 
-        while(len(games) < user + 1):
-            games.append(Game())
-            agents.append(adversary())
-        
-        game = games[user]
-        response.response = json.dumps({
-            'max_health': game._M_MAP,
-            'attack': game._A_MAP,
-            'retaliation': game._R_MAP,
-            'cost': game._C_MAP,
-            'attack_ready': game.get_attack_ready(),
-            'black_money': game.get_black_money(),
-            'black_research': game.get_black_research(),
-            'bless': game.get_bless(),
-            'cities': game.get_cities(),
-            'economy_phase': game.get_economy_phase(),
-            'move_ready': game.get_move_ready(),
-            'piece_health': game.get_piece_health(),
-            'pieces': game.get_pieces(),
-            'player_to_move': game.get_player_to_move(),
-            'white_money': game.get_white_money(),
-            'white_research': game.get_white_research()
-        })
-        
-        return response
-    elif(request.method == 'POST'):
-        response = make_response()
+    while(len(games) < user + 1):
+        games.append(Game())
+        agents.append(adversary())
+    
+    game = games[user]
+    agent = agents[user]
 
-        user = request.cookies.get('user')
-        if(user == None):
-            user = str(len(games))
-            response.set_cookie('user', user)
-            games.append(Game())
-            agents.append(adversary())
-
-        user = int(user)
-
-        while(len(games) < user + 1):
-            games.append(Game())
-            agents.append(adversary())
-        
-        game = games[user]
-        agent = agents[user]
-        
+    if(request.method == 'POST'):
         try:
             if 't1' in request.json:
                 if type(request.json['t1']) is list:
@@ -107,24 +70,23 @@ def status():
         except Exception as e:
             print(e)
         
-        response.response = json.dumps({
-            'max_health': game._M_MAP,
-            'attack': game._A_MAP,
-            'retaliation': game._R_MAP,
-            'cost': game._C_MAP,
-            'attack_ready': game.get_attack_ready(),
-            'black_money': game.get_black_money(),
-            'black_research': game.get_black_research(),
-            'bless': game.get_bless(),
-            'cities': game.get_cities(),
-            'economy_phase': game.get_economy_phase(),
-            'move_ready': game.get_move_ready(),
-            'piece_health': game.get_piece_health(),
-            'pieces': game.get_pieces(),
-            'player_to_move': game.get_player_to_move(),
-            'white_money': game.get_white_money(),
-            'white_research': game.get_white_research()
-        })
-        
-        return response
-        print(request.json)
+    response.response = json.dumps({
+        'max_health': game._M_MAP,
+        'attack': game._A_MAP,
+        'retaliation': game._R_MAP,
+        'cost': game._C_MAP,
+        'attack_ready': game.get_attack_ready(),
+        'black_money': game.get_black_money(),
+        'black_research': game.get_black_research(),
+        'bless': game.get_bless(),
+        'cities': game.get_cities(),
+        'economy_phase': game.get_economy_phase(),
+        'move_ready': game.get_move_ready(),
+        'piece_health': game.get_piece_health(),
+        'pieces': game.get_pieces(),
+        'player_to_move': game.get_player_to_move(),
+        'white_money': game.get_white_money(),
+        'white_research': game.get_white_research()
+    })
+    
+    return response
