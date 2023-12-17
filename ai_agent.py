@@ -76,7 +76,7 @@ class mcts():
         self.rollout = rolloutPolicy
 
     def search(self, initialgame, needDetails=False):
-        self.root = treeNode(initialgame, None)
+        self.root = treeNode(copy.deepcopy(initialgame), None)
 
         if self.limitType == 'time':
             timeLimit = time.time() + self.timeLimit / 1000
@@ -110,7 +110,7 @@ class mcts():
         actions = node.game.get_possible_actions()
         for action in actions:
             if action not in node.children:
-                newNode = treeNode(node.game, node)
+                newNode = treeNode(copy.deepcopy(node.game), node)
                 newNode.game.take_action(action)
                 node.children[action] = newNode
                 if len(actions) == len(node.children):

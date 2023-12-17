@@ -3,6 +3,78 @@ window.game = {
     selected: null,
     player: "white",
     other_player: "black",
+    events: {
+        click: function(event){
+            if((window.game.player == "black" && window.game.state.player_to_move == 1) || (window.game.player == "white" && window.game.state.player_to_move == -1)){
+                return;
+            }
+
+            var cell = event.target;
+            
+            while(!cell.id){
+                cell = cell.parentElement;
+            }
+
+            if(cell.id != "game" && !cell.id.startsWith(window.game.other_player)){
+                if(cell.id == window.game.player + "_phase"){
+                    var research = null;
+                    if(window.game.selected != null){
+                        if(window.game.selected.startsWith(window.game.player)){
+                            research = parseInt(window.game.selected.split('_')[2]);
+                        }
+
+                        document.getElementById(window.game.selected).classList.remove("glow");
+                        
+                        window.game.selected = null;
+                    }
+
+                    if(research == null && !window.game.state.economy_phase){
+                        fetch("/game/status", {
+                            method: "POST",
+                            headers: {
+                              "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify({
+                                economy_phase: false
+                            })
+                        }).then((response) => response.json()).then((data) => {
+                            window.game.state = data;
+                            
+                            window.game.render();
+                        }).catch((err) => {
+                            console.log(err);
+                        });
+                    }else{
+                        fetch("/game/status", {
+                            method: "POST",
+                            headers: {
+                              "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify({
+                                research: research
+                            })
+                        }).then((response) => response.json()).then((data) => {
+                            window.game.state = data;
+                            
+                            window.game.render();
+                        }).catch((err) => {
+                            console.log(err);
+                        });
+                    }
+                }else{
+                    if(cell.id != window.game.player + "_panel_0"){
+                        if(window.game.selected == null){
+                            cell.classList.add("glow");
+                            window.game.start_action(cell.id);
+                        }else if(!cell.id.startsWith(window.game.player)){
+                            cell.classList.add("glow");
+                            window.game.end_action(cell.id);
+                        }
+                    }
+                }
+            }
+        }
+    },
     initialize: function(){
         return new Promise((resolve, reject) => {
             window.game.refresh().then(() => {
@@ -128,76 +200,7 @@ window.game = {
                 
                 view_port.appendChild(white_panel);
 
-                view_port.addEventListener("click", (event) => {
-                    if((window.game.player == "black" && window.game.state.player_to_move == 1) || (window.game.player == "white" && window.game.state.player_to_move == -1)){
-                        return;
-                    }
-
-                    var cell = event.target;
-                    
-                    while(!cell.id){
-                        cell = cell.parentElement;
-                    }
-
-                    if(cell.id != "game" && !cell.id.startsWith(window.game.other_player)){
-                        if(cell.id == window.game.player + "_phase"){
-                            var research = null;
-                            if(window.game.selected != null){
-                                if(window.game.selected.startsWith(window.game.player)){
-                                    research = parseInt(window.game.selected.split('_')[2]);
-                                }
-
-                                document.getElementById(window.game.selected).classList.remove("glow");
-                                
-                                window.game.selected = null;
-                            }
-
-                            if(research == null && !window.game.state.economy_phase){
-                                fetch("/game/status", {
-                                    method: "POST",
-                                    headers: {
-                                      "Content-Type": "application/json"
-                                    },
-                                    body: JSON.stringify({
-                                        economy_phase: false
-                                    })
-                                }).then((response) => response.json()).then((data) => {
-                                    window.game.state = data;
-                                    
-                                    window.game.render();
-                                }).catch((err) => {
-                                    console.log(err);
-                                });
-                            }else{
-                                fetch("/game/status", {
-                                    method: "POST",
-                                    headers: {
-                                      "Content-Type": "application/json"
-                                    },
-                                    body: JSON.stringify({
-                                        research: research
-                                    })
-                                }).then((response) => response.json()).then((data) => {
-                                    window.game.state = data;
-                                    
-                                    window.game.render();
-                                }).catch((err) => {
-                                    console.log(err);
-                                });
-                            }
-                        }else{
-                            if(cell.id != window.game.player + "_panel_0"){
-                                if(window.game.selected == null){
-                                    cell.classList.add("glow");
-                                    window.game.start_action(cell.id);
-                                }else if(!cell.id.startsWith(window.game.player)){
-                                    cell.classList.add("glow");
-                                    window.game.end_action(cell.id);
-                                }
-                            }
-                        }
-                    }
-                });
+                window.game.create_events();
 
                 resolve();
             }).catch((err) => {
@@ -278,7 +281,6 @@ window.game = {
                 }
 
                 if(piece != 0){
-                    console.log(board.children[i].children[j].children.length > 0)
                     var pieceElement = document.createElement("div");
                         if(piece > 0){
                             pieceElement.classList.add("white");
@@ -300,8 +302,6 @@ window.game = {
 
                     var is_city = Array.from(board.children[i].children[j].children[0].classList).includes("city");
 
-                    console.log(board.children[i].children[j])
-                    console.log(is_city)
                     var health = document.createElement("p");
 
                         if(window.game.state.bless[i][j] == 1){
@@ -359,6 +359,20 @@ window.game = {
         }
 
     },
+    create_events: function(){
+        var handler_names = Object.keys(window.game.events);
+
+        for(var i = 0; i < handler_names.length; i++){
+            document.getElementById("game").addEventListener(handler_names[i], window.game.events[handler_names[i]]);
+        }
+    },
+    delete_events: function(){
+        var handler_names = Object.keys(window.game.events);
+
+        for(var i = 0; i < handler_names.length; i++){
+            document.getElementById("game").removeEventListener(handler_names[i], window.game.events[handler_names[i]]);
+        }
+    },
     start_action: function(value){
         window.game.selected = value;
     },
@@ -377,6 +391,8 @@ window.game = {
     },
     act: function(c1, c2){
         return new Promise((resolve, reject) => {
+            window.game.delete_events();
+
             var t1 = null;
             var t2 = null;
             if(c1.startsWith(window.game.player)){
@@ -398,8 +414,6 @@ window.game = {
                 t2[1] = parseInt(t2[1]);    
             }
 
-            console.log(t1, t2);
-
             fetch("/game/status", {
                 method: "POST",
                 headers: {
@@ -411,6 +425,7 @@ window.game = {
                 })
             }).then((response) => response.json()).then((data) => {
                 window.game.state = data;
+                window.game.create_events();
                 resolve();
             }).catch((err) => {
                 reject(err);
