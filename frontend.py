@@ -89,7 +89,5 @@ def status():
         'white_money': game.get_white_money(),
         'white_research': game.get_white_research()
     })
-
-    game.print_board()
     
     return response
