@@ -19,21 +19,23 @@ def main():
         else:
             action = black_agent.decide_action(game_state)
 
-        # try:
-        #     game_state.take_action(action)
-        # except Exception as e:
-        #     print("oops, threw an exception!")
-        #     print(e.args[0])
-        #     game_state.print_board()
-        #     print(action.action_type)
-        #     print(action.space)
-        #     print(action.heading)
-        #     print(action.piece_type)
-        #     input("press enter to continue")
-        game_state.take_action(action)
-
-        if action.action_type == Game.Action.TYPE_END_TURN or action.action_type == Game.Action.TYPE_RESEARCH:
+        try:
+            game_state.take_action(action)
+        except Exception as e:
+            # print("oops, threw an exception!")
+            print(e.args[0])
+            game_state.print_board()
+            game_state.print_sideboard()
+            print(action.action_type)
+            print(action.space)
+            print(action.heading)
+            print(action.piece_type)
+            # input("press enter to continue")
+            raise Exception(e)
+        # game_state.take_action(action)
+        if action.action_type == game.Game.Action.TYPE_END_TURN or action.action_type == game.Game.Action.TYPE_RESEARCH:
             turn_num += 1
+            print(".")
             if turn_num % 30 == 0:
                 game_state.print_board()
 
